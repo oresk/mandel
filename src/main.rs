@@ -2,22 +2,24 @@
 
 // include png output
 // include complex numbers
+use easy_complex::Complex;
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
     let zoom = 100;
-    let zero = Complex<f32>.new(100, 100);
-    let size = Complex<f32<.new(500,500);
-    let boundary = 50
+    let zero = Complex{real: 100, imag: 100};
+    let size = Complex{real: 500, imag: 500};
+    let boundary = 50;
 
-let image: Vec<Vec<i32>> = Vec::new();
+let mut image: [[f64; size.real()]; size.imag()];
 
 // later implement first just in an array let mut image = Image.new("image.png")
 // make image with resolution
 
-for (i = 0; i < res.real(); i++){
-    for (j = 0; j < res.imag(); j++){
-        int image(i,j) = calculate_mandelbrot(complex(i - zero.real()), complex(j - zero.imag()), boundary);
+for i in 0..image.x_size(){
+    for j in 0..image.y_size(){
+        //
+        image(i,j) = calculate_mandelbrot_pixel(complex(i - zero.real()), complex(j - zero.imag()), boundary);
     }
 }
 
@@ -25,6 +27,19 @@ for (i = 0; i < res.real(); i++){
 
 }
 
-fn calculate_mandelbrot(location: complex<f32>, boundary: u32 ){
+fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u32 ) -> u32{
+    let mut zn: Complex<f64> = Complex{real: 0.0, imag: 0.0 };
+    let mut result = boundary;
 
+let kk = Complex<f64>::powc(zn,33);
+let ff = zn.powc(3);
+
+    for i in 0..boundary {
+        zn = location + Complex<f64>::powc(zn,2);
+        if zn.real() > 2.0 {
+            result = i;
+            break;
+        }
+    }
+    result
 }
