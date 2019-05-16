@@ -5,4 +5,5 @@ authors = ["Lovro Oreskovic <lovro@oreskovic.me>"]
 edition = "2018"
 
 [dependencies]
-easy_complex = "0.4.0"
+num = "0.2"
+ndarray = "0.12.1"

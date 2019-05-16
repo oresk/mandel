@@ -2,24 +2,22 @@
 
 // include png output
 // include complex numbers
-use easy_complex::Complex;
+use num::complex::Complex;
+use ndarray::Array2;
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
     let zoom = 100;
-    let zero = Complex{real: 100, imag: 100};
-    let size = Complex{real: 500, imag: 500};
+    let zero = Complex{re: 10.0, im: 10.0};
+    let size = Complex{re: 50, im: 50};
     let boundary = 50;
 
-let mut image: [[f64; size.real()]; size.imag()];
+let mut image = Array2::<u32>::zeros((size.re, size.im));
 
-// later implement first just in an array let mut image = Image.new("image.png")
-// make image with resolution
-
-for i in 0..image.x_size(){
-    for j in 0..image.y_size(){
-        //
-        image(i,j) = calculate_mandelbrot_pixel(complex(i - zero.real()), complex(j - zero.imag()), boundary);
+for i in 0..image.rows() {
+    for j in 0..image.cols(){
+        image[[i,j]] = calculate_mandelbrot_pixel(Complex{re: i as f64 , im: j as f64} - zero, boundary);
+        println!("item {}{} value: {}", i, j, image[[i,j]]);
     }
 }
 
@@ -28,15 +26,12 @@ for i in 0..image.x_size(){
 }
 
 fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u32 ) -> u32{
-    let mut zn: Complex<f64> = Complex{real: 0.0, imag: 0.0 };
+    let mut zn = Complex{re: 0.0, im: 0.0 };
     let mut result = boundary;
 
-let kk = Complex<f64>::powc(zn,33);
-let ff = zn.powc(3);
-
     for i in 0..boundary {
-        zn = location + Complex<f64>::powc(zn,2);
-        if zn.real() > 2.0 {
+        zn = zn.powf(2.0) + location;
+        if zn.re > 2.0 {
             result = i;
             break;
         }
