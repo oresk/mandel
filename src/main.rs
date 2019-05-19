@@ -4,9 +4,12 @@
 use std::env;
 use std::convert::TryFrom;
 use num::complex::Complex;
+use clap::{Arg, ArgMatches, App, SubCommand};
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
+
+fn main() {
     let args: Vec<String> = env::args().collect();
     let config = parse_config(&args);
 
