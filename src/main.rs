@@ -9,16 +9,15 @@ use clap::{Arg, ArgMatches, App, SubCommand};
 fn main() {
     println!("Welcome to mandelbrot set display!");
 
-fn main() {
     let args: Vec<String> = env::args().collect();
     let config = parse_config(&args);
 
     let mut image = vec![vec![0; usize::try_from(config.size.re).unwrap()]; usize::try_from(config.size.im).unwrap()];
 
-    for i in 0..config.size.re {
-        for j in 0..config.size.im{
-            image[i as usize][j as usize] = calculate_mandelbrot_pixel((Complex{re: i as f64 , im: j as f64} - config.zero) / config.zoom, config.boundary);
-            print!("{} ",image[i as usize][j as usize]);
+    for i in 0..image.len() {
+        for j in 0..image[i].len() {
+            image[i][j] = calculate_mandelbrot_pixel((Complex{re: i as f64 , im: j as f64} - config.zero) / config.zoom, config.boundary);
+            print!("{:3} ",image[i][j]);
             //print!("|{} {}|",i,j);
         }
         println!("");
