@@ -2,30 +2,55 @@
 #[macro_use]
 extern crate clap;
 // include png output
-use std::env;
 use std::convert::TryFrom;
 use num::complex::Complex;
-use clap::{Arg, ArgMatches, App, SubCommand};
+use clap::{Arg, App};
+// For reading and opening files
+use std::path::Path;
+use std::fs::File;
+use std::io::BufWriter;
+// To use encoder.set()
+use png::HasParameters;
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
 
-    let args: Vec<String> = env::args().collect();
-    let config = parse_config(&args);
+    let config = parse_config();
 
     let mut image = vec![vec![0; usize::try_from(config.size.re).unwrap()]; usize::try_from(config.size.im).unwrap()];
 
     for i in 0..image.len() {
         for j in 0..image[i].len() {
             image[i][j] = calculate_mandelbrot_pixel((Complex{re: i as f64 , im: j as f64} - config.zero) / config.zoom, config.boundary);
-            print!("{:3} ",image[i][j]);
+            //print!("{:3} ",image[i][j]);
         }
-        println!("");
-        println!("");
+        //println!("");
+        //println!("");
     }
 
 // create png from image array
 
+    let path = Path::new(r"image.png");
+    let file = File::create(path).unwrap();
+    let ref mut w = BufWriter::new(file);
+
+    let mut encoder = png::Encoder::new(w, config.size.re, config.size.im); 
+    encoder.set(png::ColorType::RGBA).set(png::BitDepth::Eight);
+     let mut writer = encoder.write_header().unwrap();
+
+    let mut data: Vec<u8> = vec![255; usize::try_from(4 * config.size.re * config.size.im).unwrap()];
+    
+    for i in 0..image.len(){
+        for j in 0..image[i].len() {
+            //data[2 + 4 * i * j] = image[i][j] as u8;
+            //data[3 + 4 * i * j] = 255; 
+            data[0 + 4 * i * j] = 0u8;
+            data[1 + 4 * i * j] = 0u8;
+            data[2 + 4 * i * j] = 0u8;
+        }
+    }
+    
+    writer.write_image_data(&data).unwrap(); // Save
 }
 
 struct Config{
@@ -35,7 +60,21 @@ struct Config{
     boundary: u32,
 }
 
-fn parse_config(args: &[String]) -> Config {
+fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u32 ) -> u32{
+    let mut zn = Complex{re: 0.0, im: 0.0 };
+    let mut result = boundary;
+
+    for i in 0..boundary {
+        zn = zn.powf(2.0) + location;
+        if zn.re > 2.0 {
+            result = i;
+            break;
+        }
+    }
+    result
+}
+
+fn parse_config() -> Config {
     let matches = App::new("Mandelbrot generator")
                           .version("0.1.0")
                           .author("Lovro Oreskovic <lovro@oreskovic.me>")
@@ -70,18 +109,4 @@ fn parse_config(args: &[String]) -> Config {
     let boundary = value_t!(matches, "BOUNDARY", u32).unwrap_or(50);
 
     Config { zoom, zero, size, boundary }
-}
-
-fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u32 ) -> u32{
-    let mut zn = Complex{re: 0.0, im: 0.0 };
-    let mut result = boundary;
-
-    for i in 0..boundary {
-        zn = zn.powf(2.0) + location;
-        if zn.re > 2.0 {
-            result = i;
-            break;
-        }
-    }
-    result
 }
