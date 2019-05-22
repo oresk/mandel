@@ -2,37 +2,22 @@
 #[macro_use]
 extern crate clap;
 // include png output
-use std::convert::TryFrom;
 use num::complex::Complex;
 use clap::{Arg, App};
-use image::{GenericImage, ImageBuffer};
+use image;
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
 
     let config = parse_config();
 
-    let mut image = vec![vec![0; usize::try_from(config.size.re).unwrap()]; usize::try_from(config.size.im).unwrap()];
-
-    for i in 0..image.len() {
-        for j in 0..image[i].len() {
-            image[i][j] = calculate_mandelbrot_pixel((Complex{re: i as f64 , im: j as f64} - config.zero) / config.zoom, config.boundary);
-            //print!("{:3} ",image[i][j]);
-        }
-        //println!("");
-        //println!("");
-    }
-
-// create png from image array
     let mut imgbuf = image::ImageBuffer::new(config.size.re, config.size.im);
-
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let r = image[x as usize][y as usize] as u8;
-        *pixel = image::Rgb([r, 0, 0]);
+        let k = calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary) as u8;
+        *pixel = image::Rgb([k, k, k]);
     }
     // Save the image as “fractal.png”, the format is deduced from the path
     imgbuf.save("fractal.png").unwrap();
-
 }
 
 struct Config{
