@@ -5,12 +5,7 @@ extern crate clap;
 use std::convert::TryFrom;
 use num::complex::Complex;
 use clap::{Arg, App};
-// For reading and opening files
-use std::path::Path;
-use std::fs::File;
-use std::io::BufWriter;
-// To use encoder.set()
-use png::HasParameters;
+use image::{GenericImage, ImageBuffer};
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
@@ -29,28 +24,15 @@ fn main() {
     }
 
 // create png from image array
+    let mut imgbuf = image::ImageBuffer::new(config.size.re, config.size.im);
 
-    let path = Path::new(r"image.png");
-    let file = File::create(path).unwrap();
-    let ref mut w = BufWriter::new(file);
-
-    let mut encoder = png::Encoder::new(w, config.size.re, config.size.im); 
-    encoder.set(png::ColorType::RGBA).set(png::BitDepth::Eight);
-     let mut writer = encoder.write_header().unwrap();
-
-    let mut data: Vec<u8> = vec![255; usize::try_from(4 * config.size.re * config.size.im).unwrap()];
-    
-    for i in 0..image.len(){
-        for j in 0..image[i].len() {
-            //data[2 + 4 * i * j] = image[i][j] as u8;
-            //data[3 + 4 * i * j] = 255; 
-            data[0 + 4 * i * j] = 0u8;
-            data[1 + 4 * i * j] = 0u8;
-            data[2 + 4 * i * j] = 0u8;
-        }
+    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
+        let r = image[x as usize][y as usize] as u8;
+        *pixel = image::Rgb([r, 0, 0]);
     }
-    
-    writer.write_image_data(&data).unwrap(); // Save
+    // Save the image as “fractal.png”, the format is deduced from the path
+    imgbuf.save("fractal.png").unwrap();
+
 }
 
 struct Config{
