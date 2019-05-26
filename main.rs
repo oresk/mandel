@@ -1,29 +1,42 @@
 // https://hardmath123.github.io/scratch-mandelbrot.html
 #[macro_use]
 extern crate clap;
-use clap::{Arg, App};
+// include png output
 use num::complex::Complex;
+use clap::{Arg, App};
 use image;
+use std::thread;
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
 
     let config = parse_config();
 
-    let img = image::ImageBuffer::from_fn(config.size.re, config.size.im, |x, y|
-        image::Rgb([0, calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary), 0]));
+    let mut imgbuf = image::ImageBuffer::new(config.size.re, config.size.im);
+    imgbuf.enumerate_pixels_mut()
+          .for_each(|(x, y, pixel)| {
+                *pixel = image::Rgb([0,calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary) as u8, 0]);
+          });
+    // Save the image as “fractal.png”, the format is deduced from the path
+    imgbuf.save("fractal.png").unwrap();
 
-    img.save("fractal.png").unwrap();
+
+//    let imagebuff = image::ImageBuffer::from_fn(config.size.re, config.size.im, calc_mandel_pixel);
+
+let img = image::ImageBuffer::from_fn(512, 512, |x, y| image::Rgb([(x * y) as u8, y as u8, y as u8]));
+
+img.save("tst.png").unwrap();
+
 }
 
 struct Config{
     zoom: Complex<f64>,
     zero: Complex<f64>,
     size: Complex<u32>,
-    boundary: u8,
+    boundary: u32,
 }
 
-fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u8 ) -> u8{
+fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u32 ) -> u32{
     let mut zn = Complex{re: 0.0, im: 0.0 };
     let mut result = boundary;
 
@@ -36,6 +49,11 @@ fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u8 ) -> u8{
     }
     result
 }
+
+//fn calc_mandel_pixel(x: u32, y: u32) -> image::Pixel<Subpixel = Rgb> {
+////    image::Rgb([0,calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - cfg.zero) / cfg.zoom, cfg.boundary) as u8, 0])
+//    image::Rgb([0,calculate_mandelbrot_pixel(Complex{re: x as f64, im: y as f64}, 50) as u8, 0])
+//}
 
 fn parse_config() -> Config {
     let matches = App::new("Mandelbrot generator")
@@ -66,10 +84,10 @@ fn parse_config() -> Config {
                                .index(6))
                           .get_matches();
 
+    let zoom = Complex{re: value_t!(matches, "ZOOM", f64).unwrap_or(10.0), im: 0.0};
     let zero = Complex{re: value_t!(matches, "ZEROx", f64).unwrap(), im: value_t!(matches, "ZEROy", f64).unwrap() };
     let size = Complex{re: value_t!(matches, "SIZEx", u32).unwrap(), im: value_t!(matches, "SIZEy", u32).unwrap() };
-    let zoom = Complex{re: value_t!(matches, "ZOOM", f64).unwrap_or(size.re as f64), im: 0.0};
-    let boundary = value_t!(matches, "BOUNDARY", u8).unwrap_or(50);
+    let boundary = value_t!(matches, "BOUNDARY", u32).unwrap_or(50);
 
     Config { zoom, zero, size, boundary }
 }
