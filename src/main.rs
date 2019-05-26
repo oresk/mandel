@@ -5,6 +5,7 @@ extern crate clap;
 use num::complex::Complex;
 use clap::{Arg, App};
 use image;
+use std::thread;
 
 fn main() {
     println!("Welcome to mandelbrot set display!");
@@ -12,10 +13,15 @@ fn main() {
     let config = parse_config();
 
     let mut imgbuf = image::ImageBuffer::new(config.size.re, config.size.im);
-    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let k = calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary) as u8;
-        *pixel = image::Rgb([k, k, k]);
-    }
+//    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
+//        let k = calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary) as u8;
+//        *pixel = image::Rgb([k, k, k])
+//        };
+
+    imgbuf.enumerate_pixels_mut()
+          .for_each(|(x, y, pixel)| {
+                *pixel = image::Rgb([0,calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary) as u8, 0]);
+          });
     // Save the image as “fractal.png”, the format is deduced from the path
     imgbuf.save("fractal.png").unwrap();
 }
