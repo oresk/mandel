@@ -13,17 +13,20 @@ fn main() {
     let config = parse_config();
 
     let mut imgbuf = image::ImageBuffer::new(config.size.re, config.size.im);
-//    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-//        let k = calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary) as u8;
-//        *pixel = image::Rgb([k, k, k])
-//        };
-
     imgbuf.enumerate_pixels_mut()
           .for_each(|(x, y, pixel)| {
                 *pixel = image::Rgb([0,calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - config.zero) / config.zoom, config.boundary) as u8, 0]);
           });
     // Save the image as “fractal.png”, the format is deduced from the path
     imgbuf.save("fractal.png").unwrap();
+
+
+//    let imagebuff = image::ImageBuffer::from_fn(config.size.re, config.size.im, calc_mandel_pixel);
+
+let img = image::ImageBuffer::from_fn(512, 512, |x, y| image::Rgb([(x * y) as u8, y as u8, y as u8]));
+
+img.save("tst.png").unwrap();
+
 }
 
 struct Config{
@@ -46,6 +49,11 @@ fn calculate_mandelbrot_pixel(location: Complex<f64>, boundary: u32 ) -> u32{
     }
     result
 }
+
+//fn calc_mandel_pixel(x: u32, y: u32) -> image::Pixel<Subpixel = Rgb> {
+////    image::Rgb([0,calculate_mandelbrot_pixel((Complex{re: x as f64, im: y as f64} - cfg.zero) / cfg.zoom, cfg.boundary) as u8, 0])
+//    image::Rgb([0,calculate_mandelbrot_pixel(Complex{re: x as f64, im: y as f64}, 50) as u8, 0])
+//}
 
 fn parse_config() -> Config {
     let matches = App::new("Mandelbrot generator")
